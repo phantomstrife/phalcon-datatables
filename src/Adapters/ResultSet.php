@@ -1,8 +1,6 @@
 <?php
 namespace DataTables\Adapters;
 
-use Phalcon\Mvc\Model\Resultset as PhalconResultSet;
-
 class ResultSet extends AdapterInterface {
 
   protected $resultSet;
@@ -15,27 +13,30 @@ class ResultSet extends AdapterInterface {
     $offset = $this->parser->getOffset();
     $total  = $this->resultSet->count();
 
-    $this->bind('global_search', function($column, $search) {
+    $this->bind('global_search', function ($column, $search) {
       $this->global[$column][] = $search;
     });
 
-    $this->bind('column_search', function($column, $search) {
+    $this->bind('column_search', function ($column, $search) {
       $this->column[$column][] = $search;
     });
 
-    $this->bind('order', function($order) {
+    $this->bind('order', function ($order) {
       $this->order = $order;
     });
 
-    if(count($this->global) || count($this->column)) {
-      $filter = $this->resultSet->filter(function($item){
+    if (count($this->global) || count($this->column)) {
+      $filter = $this->resultSet->filter(function ($item) {
         $check = false;
 
         if (count($this->global)) {
-          foreach($this->global as $column=>$filters) {
-            foreach($filters as $search) {
+          foreach ($this->global as $column => $filters) {
+            foreach ($filters as $search) {
               $check = (strpos($item->$column, $search) !== false);
-              if ($check) break 2;
+              if ($check) {
+                break 2;
+              }
+
             }
           }
         } else {
@@ -43,10 +44,13 @@ class ResultSet extends AdapterInterface {
         }
 
         if (count($this->column) && $check) {
-          foreach($this->column as $column=>$filters) {
-            foreach($filters as $search) {
+          foreach ($this->column as $column => $filters) {
+            foreach ($filters as $search) {
               $check = (strpos($item->$column, $search) !== false);
-              if (!$check) break 2;
+              if (!$check) {
+                break 2;
+              }
+
             }
           }
         }
@@ -57,12 +61,12 @@ class ResultSet extends AdapterInterface {
       });
 
       $filtered = count($filter);
-      $items = array_map(function($item) {
+      $items    = array_map(function ($item) {
         return $item->toArray();
       }, $filter);
     } else {
       $filtered = $total;
-      $items = $this->resultSet->filter(function($item) {
+      $items    = $this->resultSet->filter(function ($item) {
         return $item->toArray();
       });
     }
@@ -70,11 +74,11 @@ class ResultSet extends AdapterInterface {
     if ($this->order) {
       $args = [];
 
-      foreach($this->order as $order) {
-        $tmp = [];
+      foreach ($this->order as $order) {
+        $tmp                = [];
         list($column, $dir) = explode(' ', $order);
 
-        foreach($items as $key=>$item) {
+        foreach ($items as $key => $item) {
           $tmp[$key] = $item[$column];
         }
 
@@ -95,9 +99,9 @@ class ResultSet extends AdapterInterface {
     }
 
     return $this->formResponse([
-      'total'     => (int)$total,
-      'filtered'  => (int)$filtered,
-      'data'      => $items,
+      'total'    => (int) $total,
+      'filtered' => (int) $filtered,
+      'data'     => $items,
     ]);
   }
 

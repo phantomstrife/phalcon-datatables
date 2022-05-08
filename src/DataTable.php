@@ -1,26 +1,27 @@
 <?php
 namespace DataTables;
 
+use DataTables\Adapters\ArrayAdapter;
 use DataTables\Adapters\QueryBuilder;
 use DataTables\Adapters\ResultSet;
-use DataTables\Adapters\ArrayAdapter;
+use Phalcon\Di\Injectable;
 use Phalcon\Http\Response;
 
-class DataTable extends \Phalcon\Mvc\User\Plugin {
+class DataTable extends Injectable {
 
   protected $options;
   protected $params;
   protected $response;
-  public    $parser;
+  public $parser;
 
   public function __construct($options = []) {
     $default = [
-      'limit'   => 20,
-      'length'  => 50,
+      'limit'  => 20,
+      'length' => 50,
     ];
 
     $this->options = $options + $default;
-    $this->parser = new ParamsParser($this->options['limit']);
+    $this->parser  = new ParamsParser($this->options['limit']);
   }
 
   public function getParams() {
@@ -58,7 +59,7 @@ class DataTable extends \Phalcon\Mvc\User\Plugin {
   }
 
   public function fromResultSet($resultSet, $columns = []) {
-    if(empty($columns) && $resultSet->count() > 0) {
+    if (empty($columns) && $resultSet->count() > 0) {
       $columns = array_keys($resultSet->getFirst()->toArray());
       $resultSet->rewind();
     }
@@ -73,7 +74,7 @@ class DataTable extends \Phalcon\Mvc\User\Plugin {
   }
 
   public function fromArray($array, $columns = []) {
-    if(empty($columns) && count($array) > 0) {
+    if (empty($columns) && count($array) > 0) {
       $columns = array_keys(current($array));
     }
 

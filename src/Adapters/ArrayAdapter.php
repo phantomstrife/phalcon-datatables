@@ -18,27 +18,30 @@ class ArrayAdapter extends AdapterInterface {
     $offset = $this->parser->getOffset();
     $total  = count($this->array);
 
-    $this->bind('global_search', function($column, $search) {
+    $this->bind('global_search', function ($column, $search) {
       $this->global[$column][] = $search;
     });
 
-    $this->bind('column_search', function($column, $search) {
+    $this->bind('column_search', function ($column, $search) {
       $this->column[$column][] = $search;
     });
 
-    $this->bind('order', function($order) {
+    $this->bind('order', function ($order) {
       $this->order = $order;
     });
 
-    if(count($this->global) || count($this->column)) {
-      $items = array_filter($this->array, function($item) {
+    if (count($this->global) || count($this->column)) {
+      $items = array_filter($this->array, function ($item) {
         $check = false;
 
         if (count($this->global)) {
-          foreach($this->global as $column=>$filters) {
-            foreach($filters as $search) {
-              $check = (strpos($item[$column], $search) !== false);
-              if ($check) break 2;
+          foreach ($this->global as $column => $filters) {
+            foreach ($filters as $search) {
+              $check = (stripos($item[$column], $search) !== false);
+              if ($check) {
+                break 2;
+              }
+
             }
           }
         } else {
@@ -46,10 +49,13 @@ class ArrayAdapter extends AdapterInterface {
         }
 
         if (count($this->column) && $check) {
-          foreach($this->column as $column=>$filters) {
-            foreach($filters as $search) {
-              $check = (strpos($item[$column], $search) !== false);
-              if (!$check) break 2;
+          foreach ($this->column as $column => $filters) {
+            foreach ($filters as $search) {
+              $check = (stripos($item[$column], $search) !== false);
+              if (!$check) {
+                break 2;
+              }
+
             }
           }
         }
@@ -67,18 +73,17 @@ class ArrayAdapter extends AdapterInterface {
     if ($this->order) {
       $args = [];
 
-      foreach($this->order as $order) {
-        $tmp = [];
+      foreach ($this->order as $order) {
+        $tmp                = [];
         list($column, $dir) = explode(' ', $order);
 
-        foreach($items as $key=>$item) {
+        foreach ($items as $key => $item) {
           $tmp[$key] = $item[$column];
         }
 
         $args[] = $tmp;
         $args[] = ($dir == 'desc') ? SORT_DESC : SORT_ASC;
       }
-
 
       $args[] = &$items;
       call_user_func_array('array_multisort', $args);
@@ -93,9 +98,9 @@ class ArrayAdapter extends AdapterInterface {
     }
 
     return $this->formResponse([
-      'total'     => (int)$total,
-      'filtered'  => (int)$filtered,
-      'data'      => $items,
+      'total'    => (int) $total,
+      'filtered' => (int) $filtered,
+      'data'     => $items,
     ]);
   }
 
